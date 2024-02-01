@@ -1,0 +1,11 @@
+{
+  "bucket_name": "daniel-govnir-public",
+  "video_link": "http://185.146.206.159:80/cgi-bin/faststream.jpg?stream=half&amp;fps=15&amp;rand=COUNTER",
+  "yolo_name": "yolov8s.pt",
+  "conf": 0.3,
+  "db_name": "#",
+  "db_user": "#",
+  "db_pass": "#",
+  "db_host": "#"
+}
+

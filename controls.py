@@ -1,8 +1,8 @@
 import json
-
 import cv2
 import os
 from ultralytics import YOLO
+import redis
 
 def upload_configuration() -> dict:
     """
@@ -14,11 +14,33 @@ def upload_configuration() -> dict:
 
     return data
 
+class RedisClient:
+    def __init__(self):
+        # Initialize Redis connection pool
+        self.pool = redis.ConnectionPool(
+            host='redis-18975.c325.us-east-1-4.ec2.cloud.redislabs.com',
+            port=18975,
+            password=secret_manager_keys.get('REDIS_CLOUD_PASSWORD')
+        )
+
+
+    def cache_data(self, object: str):
+            """Caches Instagram data for a given account."""
+
+            cache_key = f'detection_data:{object}'
+            try:
+                with redis.Redis(connection_pool=self.pool) as r:
+                    if r.exists(cache_key):
+                        cached_data = r.get(cache_key)
+                        return eval(cached_data)
+                    else:
+
+
 
 class CarDetector:
     def __init__(self, yolo_name, link, conf):
         # detection names
-        self.names = ('car', 'motorbike', 'bus', 'truck', 'person', 'dog', 'bicycle')
+        self.names = ('car', 'motorbike', 'bus', 'truck', 'person', 'dog', 'bicycle', 'cat')
         # detection
         self.conf = conf
         # path
@@ -38,12 +60,10 @@ class CarDetector:
 
             if success:
                 # Run YOLOv8 tracking on the frame, persisting tracks between frames
-                results = self.model.track(frame, persist=True, conf=0.2)
+                results = self.model.track(frame, persist=True, conf=self.conf)
 
                 # detected data processing
-
                 detected_name = results[0].tojson()
-
                 if detected_name:
                     self._detection_procesing(json.loads(detected_name))
 
@@ -72,5 +92,13 @@ class CarDetector:
                    print('********', object)
 
 
+
+                   # r = redis.Redis(
+                   #     host='redis-18975.c325.us-east-1-4.ec2.cloud.redislabs.com',
+                   #     port=18975,
+                   #     password='*******',
+                   #TODO: Delete objects dubble
+                   #TODO WRITE to redis object or creat
+                   #TODO #Write to database date
 
 

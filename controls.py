@@ -4,7 +4,7 @@ import cv2
 import os
 from ultralytics import YOLO
 import redis
-from keys import secret_manager_keys
+from keys import SecretsManager
 
 
 def upload_configuration(config_file: str = 'settings1.json') -> dict:
@@ -150,5 +150,13 @@ class CarDetector:
                     redis_client.cache_data(obj_name)
                     self.last_write_time[obj_name] = current_time
 
+configuration = upload_configuration()
+
+# Usage
+aws_secrets = SecretsManager(configuration.get('aws_access_key'), configuration.get('aws_secret_key'), configuration.get('aws_region_name'))
+secret_manager_keys = aws_secrets.get_secret("logicgov")
+
 
 redis_client = RedisClient()
+
+

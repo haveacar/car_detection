@@ -2,7 +2,7 @@
   "bucket_name": "daniel-govnir-public",
   "video_link": "http://185.146.206.159:80/cgi-bin/faststream.jpg?stream=half&amp;fps=15&amp;rand=COUNTER",
   "yolo_name": "yolov8s.pt",
-  "conf": 0.5,
+  "conf": 0.65,
   "redis_endpoint": "redis-18975.c325.us-east-1-4.ec2.cloud.redislabs.com:18975",
   "redis_port": "18975",
   "aws_access_key": "#",

@@ -34,34 +34,52 @@ class RedisClient:
             decode_responses=True
         )
 
+    def test_redis_connection(self):
+        """Tests the Redis connection by setting and then getting a value."""
+        test_key = "test_connection_key"
+        test_value = "hello_redis"
+        try:
+            # Use the connection pool to get a Redis connection
+            with redis.Redis(connection_pool=self.pool) as r:
+                # Set a value in Redis
+                r.set(test_key, test_value)
+                # Retrieve the value from Redis
+                retrieved_value = r.get(test_key)
+
+                # Check if the set and get operations were successful
+                if retrieved_value == test_value:
+                    print("Redis connection test successful: Value set and retrieved correctly.")
+                else:
+                    print("Redis connection test failed: Retrieved value does not match the set value.")
+        except redis.RedisError as e:
+            print(f"Redis connection test failed with an error: {e}")
+
     def cache_data(self, object_key: str) -> None:
         """
-        Caches data for a given key by incrementing the count for the current hour. If no data
-        exists for the current hour, initializes the count at 1. If the key does not exist, a new
-        entry is created.
+        Increments the count for a given object key in Redis
         :param object_key: The key under which the data is stored in Redis.
         :return: None
         """
 
-        cache_key = f'detection_data:{object_key}'
-        current_hour = datetime.datetime.now().hour + 1  # Adjusting to 1-24 scale
+        cache_key = f'detection_object:{object_key}'
+
         try:
             with redis.Redis(connection_pool=self.pool) as r:
                 cached_data = r.get(cache_key)
                 if cached_data:
                     # If data exists, parse it
                     cached_data = json.loads(cached_data)
-                    # Update count for the current hour
-                    cached_data[current_hour] = cached_data.get(current_hour, 0) + 1
+                    # Increment the count
+                    cached_data['count'] += 1
                 else:
-                    # If no data exists, initialize with the current hour
-                    cached_data = {current_hour: 1}
+                    # If no data exists, initialize with count of 1
+                    cached_data = {'count': 1}
 
                 # Save updated data back to Redis
                 r.set(cache_key, json.dumps(cached_data))
 
         except Exception as err:
-            print(f'Error to get fata from redis: {err}')
+            print(f'Error to get data from redis: {err}')
 
 
 class CarDetector:
@@ -125,7 +143,7 @@ class CarDetector:
         self.cap.release()
         cv2.destroyAllWindows()
 
-    def _detection_procesing(self, detected: list[dict], detection_time: int = 4) -> None:
+    def _detection_procesing(self, detected: list[dict], detection_time: int = 3) -> None:
         """
         Processes detected objects by filtering for specific object names. If an object is recognized
         :param detected: A list of dictionaries, each representing a detected object with
@@ -148,15 +166,17 @@ class CarDetector:
                         (current_time - self.last_write_time[obj_name]) > datetime.timedelta(seconds=detection_time)):
 
                     redis_client.cache_data(obj_name)
+                    print('****Line***')
                     self.last_write_time[obj_name] = current_time
 
+# upload configuration
 configuration = upload_configuration()
 
 # Usage
 aws_secrets = SecretsManager(configuration.get('aws_access_key'), configuration.get('aws_secret_key'), configuration.get('aws_region_name'))
 secret_manager_keys = aws_secrets.get_secret("logicgov")
 
-
+# initialize redis client
 redis_client = RedisClient()
 
 

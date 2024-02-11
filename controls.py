@@ -30,7 +30,7 @@ class RedisClient:
         self.pool = redis.ConnectionPool(
             host=configuration.get('redis_endpoint'),
             port=configuration.get('redis_port'),
-            password=secret_manager_keys.get('REDIS_CLOUD_PASSWORD'),
+            password=configuration.get('redis_password'),
             decode_responses=True
         )
 
@@ -143,7 +143,7 @@ class CarDetector:
         self.cap.release()
         cv2.destroyAllWindows()
 
-    def _detection_procesing(self, detected: list[dict], detection_time: int = 3) -> None:
+    def _detection_procesing(self, detected: list[dict], detection_time: int = 2) -> None:
         """
         Processes detected objects by filtering for specific object names. If an object is recognized
         :param detected: A list of dictionaries, each representing a detected object with

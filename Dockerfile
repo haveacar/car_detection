@@ -37,7 +37,6 @@ COPY requirements.txt ./
 # Use --no-cache-dir to avoid storing unnecessary files, helping to save space
 RUN pip install --no-cache-dir -r requirements.txt
 
-# No need to install requirements twice, removed the second redundant pip install command
 
 # Copy the current directory contents into the container at /usr/src/app
 COPY . .

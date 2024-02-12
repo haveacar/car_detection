@@ -23,11 +23,9 @@ def upload_configuration(config_file: str = 'settings1.json') -> dict:
 class RedisClient:
     def __init__(self):
         """Initializes the RedisClient instance by setting up a connection pool to Redis."""
-        # upload_config
-        configuration = upload_configuration()
 
         # Initialize Redis connection pool
-        self.pool = redis.ConnectionPool(
+        self.r = redis.Redis(
             host=configuration.get('redis_endpoint'),
             port=configuration.get('redis_port'),
             password=configuration.get('redis_password'),
@@ -40,17 +38,17 @@ class RedisClient:
         test_value = "hello_redis"
         try:
             # Use the connection pool to get a Redis connection
-            with redis.Redis(connection_pool=self.pool) as r:
-                # Set a value in Redis
-                r.set(test_key, test_value)
-                # Retrieve the value from Redis
-                retrieved_value = r.get(test_key)
 
-                # Check if the set and get operations were successful
-                if retrieved_value == test_value:
-                    print("Redis connection test successful: Value set and retrieved correctly.")
-                else:
-                    print("Redis connection test failed: Retrieved value does not match the set value.")
+            # Set a value in Redis
+            self.r.set(test_key, test_value)
+            # Retrieve the value from Redis
+            retrieved_value = self.r.get(test_key)
+
+            # Check if the set and get operations were successful
+            if retrieved_value == test_value:
+                print("Redis connection test successful: Value set and retrieved correctly.")
+            else:
+                print("Redis connection test failed: Retrieved value does not match the set value.")
         except redis.RedisError as e:
             print(f"Redis connection test failed with an error: {e}")
 
@@ -64,19 +62,19 @@ class RedisClient:
         cache_key = f'detection_object:{object_key}'
 
         try:
-            with redis.Redis(connection_pool=self.pool) as r:
-                cached_data = r.get(cache_key)
-                if cached_data:
-                    # If data exists, parse it
-                    cached_data = json.loads(cached_data)
-                    # Increment the count
-                    cached_data['count'] += 1
-                else:
-                    # If no data exists, initialize with count of 1
-                    cached_data = {'count': 1}
 
-                # Save updated data back to Redis
-                r.set(cache_key, json.dumps(cached_data))
+            cached_data = self.r.get(cache_key)
+            if cached_data:
+                # If data exists, parse it
+                cached_data = json.loads(cached_data)
+                # Increment the count
+                cached_data['count'] += 1
+            else:
+                # If no data exists, initialize with count of 1
+                cached_data = {'count': 1}
+
+            # Save updated data back to Redis
+            self.r.set(cache_key, json.dumps(cached_data))
 
         except Exception as err:
             print(f'Error to get data from redis: {err}')
@@ -164,19 +162,18 @@ class CarDetector:
                 # Check if we've written this object type within the last two seconds
                 if (obj_name not in self.last_write_time or
                         (current_time - self.last_write_time[obj_name]) > datetime.timedelta(seconds=detection_time)):
-
                     redis_client.cache_data(obj_name)
                     print('****Line***')
                     self.last_write_time[obj_name] = current_time
+
 
 # upload configuration
 configuration = upload_configuration()
 
 # Usage
-aws_secrets = SecretsManager(configuration.get('aws_access_key'), configuration.get('aws_secret_key'), configuration.get('aws_region_name'))
+aws_secrets = SecretsManager(configuration.get('aws_access_key'), configuration.get('aws_secret_key'),
+                             configuration.get('aws_region_name'))
 secret_manager_keys = aws_secrets.get_secret("logicgov")
 
 # initialize redis client
 redis_client = RedisClient()
-
-

@@ -102,6 +102,7 @@ class CarDetector:
         self.model = YOLO(path)
         # load video stream
         self.cap = cv2.VideoCapture(link)
+
         # initialize detecting
         self.stream_detect()
 
@@ -110,6 +111,7 @@ class CarDetector:
         Processes video frames from the specified source, performing object detection and tracking.
         :return: None
         """
+
         # Loop through the video frames
         while self.cap.isOpened():
             # Read a frame from the video
@@ -129,6 +131,9 @@ class CarDetector:
 
                 # Display the annotated frame
                 cv2.imshow("YOLOv8 Tracking", annotated_frame)
+                # Full screen set up
+                #cv2.namedWindow("YOLOv8 Tracking", cv2.WINDOW_NORMAL)
+                #cv2.setWindowProperty("YOLOv8 Tracking", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
                 # Break the loop if 'q' is pressed
                 if cv2.waitKey(1) & 0xFF == ord("q"):

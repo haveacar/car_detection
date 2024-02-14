@@ -22,7 +22,7 @@ def upload_configuration(config_file: str = 'settings1.json') -> dict:
 
 class RedisClient:
     def __init__(self):
-        """Initializes the RedisClient instance by setting up a connection pool to Redis."""
+        """Initializes the RedisClient instance by setting up a connection  to Redis."""
 
         # Initialize Redis connection pool
         self.r = redis.Redis(
@@ -132,8 +132,8 @@ class CarDetector:
                 # Display the annotated frame
                 cv2.imshow("YOLOv8 Tracking", annotated_frame)
                 # Full screen set up
-                #cv2.namedWindow("YOLOv8 Tracking", cv2.WINDOW_NORMAL)
-                #cv2.setWindowProperty("YOLOv8 Tracking", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+                # cv2.namedWindow("YOLOv8 Tracking", cv2.WINDOW_NORMAL)
+                # cv2.setWindowProperty("YOLOv8 Tracking", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
                 # Break the loop if 'q' is pressed
                 if cv2.waitKey(1) & 0xFF == ord("q"):

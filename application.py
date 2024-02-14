@@ -1,7 +1,7 @@
 from controls import configuration, CarDetector, redis_client
 
 
-def run() -> None:
+def run():
     """
     Main function to test Redis connection and initialize car detection.
 

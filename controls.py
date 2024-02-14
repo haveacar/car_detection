@@ -139,7 +139,6 @@ class CarDetector:
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
             else:
-                # Break the loop if the end of the video is reached
                 break
 
         # Release the video capture object and close the display window
